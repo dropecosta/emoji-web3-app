@@ -1,23 +1,23 @@
 import PickerEmoji, { EmojiClickData } from "emoji-picker-react";
-import useEncoder from "../../hooks/useEncoder";
 import { useNavigate } from "react-router-dom";
 
-const Home = () => {
+const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { encode } = useEncoder();
 
   const handleClick = (emoji: EmojiClickData): void => {
-    const hash = window.btoa(encode(emoji.unified));
+    console.log(emoji.emoji);
+    const hash = window.btoa(emoji.unified);
     navigate(`/add/${hash}`);
   };
 
   return (
     <>
-      <h2>HomePage</h2>
-
-      <PickerEmoji
-        onEmojiClick={(emoji: EmojiClickData) => handleClick(emoji)}
-      />
+      <h1>Pick a emoji</h1>
+      <div className="container">
+        <PickerEmoji
+          onEmojiClick={(emoji: EmojiClickData) => handleClick(emoji)}
+        />
+      </div>
     </>
   );
 };

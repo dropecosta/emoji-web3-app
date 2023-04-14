@@ -1,75 +1,81 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Calendar, momentLocalizer } from "react-big-calendar";
-import moment from "moment";
+import { b64_to_utf8, unicodeToEmoji } from "../../utils/emojiHelper";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import moment from "moment";
+import Home from "../Home/Home";
 
-export default function Add() {
-  const [ethereum, setEthereum] = useState(null);
-  const [walletAddress, setWalletAddress] = useState(null);
-  const [eventsList, setEventsList] = useState([]);
+const Add: React.FC = () => {
+  const [ethereum, setEthereum] = useState<boolean>(false);
+  const [walletAddress, setWalletAddress] = useState<boolean>(false);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [signer, setSigner] = useState<Promise<ethers.JsonRpcSigner>>();
 
   async function requestAccount() {
     console.log("Requesting account...");
 
-    // Check if Meta Mask Extension exists
+    // Check if MetaMask Extension exists
     if (window.ethereum) {
-      console.log("detected");
-      console.log("window.ethereum", window.ethereum);
-
       try {
         const accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
         setEthereum(window.ethereum);
         setWalletAddress(accounts[0]);
+        setIsConnected(true);
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        setSigner(provider.getSigner());
       } catch (error) {
         console.log(error);
       }
     } else {
+      setIsConnected(false);
       alert("Meta Mask not detected");
     }
   }
 
-  // Create a provider to interact with a smart contract
-  async function connectWallet() {
-    if (typeof window.ethereum !== "undefined") {
-      await requestAccount();
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-    }
-  }
-
-  moment.locale("en-GB");
+  moment.locale("en");
   const localizer = momentLocalizer(moment);
 
+  // convert to emoji
   const { emoji } = useParams();
-  console.log("emoji", emoji);
+  const decoded = b64_to_utf8(emoji!);
+  const convertedEmoji = unicodeToEmoji(decoded);
 
-  const decodedEmoji = emoji;
-  console.log("decodedEmoji", decodedEmoji);
-
-  const now = new Date();
-  const events = [
+  const emojiEvent = 
     {
       id: 1,
-      title: emoji,
+      title: convertedEmoji,
       start: new Date(new Date().setHours(new Date().getHours() - 3)),
       end: new Date(new Date().setHours(new Date().getHours() + 3)),
+    }
+  ;
+
+
+  const defaultEvents = [
+    {
+      id: 1,
+      title: 'Any other event',
+      start: new Date(new Date().setHours(new Date().getHours() - 1)),
+      end: new Date(new Date().setHours(new Date().getHours() + 1)),
     },
   ];
 
-  return (
-    <>
-      <div>Add</div>
+  defaultEvents.push(emojiEvent);
 
-      <div className="App">
-        <header className="app-header">
-          <button onClick={connectWallet}>Connect Wallet</button>
-          <h3>Wallet Address: {walletAddress}</h3>
-        </header>
-      </div>
+  return (
+    <div className="calendar">
+      <h1>Add</h1>
+      <header className="app-header">
+        <button className="button" role="button" onClick={requestAccount}>
+          Connect Wallet
+        </button>
+        <Link to="/">Back to Home</Link>
+      </header>
+        <h3>Wallet Address: {walletAddress}</h3>
 
       <Calendar
         views={["month"]}
@@ -77,11 +83,13 @@ export default function Add() {
         localizer={localizer}
         defaultView="month"
         style={{ height: "100vh" }}
-        events={events}
+        events={defaultEvents}
         startAccessor="start"
         endAccessor="end"
         defaultDate={moment().toDate()}
       />
-    </>
+    </div>
   );
-}
+};
+
+export default Add;
