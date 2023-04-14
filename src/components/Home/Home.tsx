@@ -5,7 +5,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   const handleClick = (emoji: EmojiClickData): void => {
-    console.log(emoji.emoji);
+    console.log(emoji);
     const hash = window.btoa(emoji.unified);
     navigate(`/add/${hash}`);
   };

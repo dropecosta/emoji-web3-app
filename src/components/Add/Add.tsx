@@ -5,7 +5,6 @@ import { Calendar, momentLocalizer } from "react-big-calendar";
 import { b64_to_utf8, unicodeToEmoji } from "../../utils/emojiHelper";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from "moment";
-import Home from "../Home/Home";
 
 const Add: React.FC = () => {
   const [ethereum, setEthereum] = useState<boolean>(false);
